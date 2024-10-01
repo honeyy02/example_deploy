@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     // Apply the Kubernetes deployment
-                    sh 'kubectl --kubeconfig=kubeconfig apply -f nginx-deployment.yaml'
+                    sh 'kubectl --kubeconfig=kubeconfig apply -f deployment.yaml'
                 }
             }
         }
@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
                     // Check if Nginx pods are running
-                    sh 'kubectl --kubeconfig=kubeconfig rollout status deployment/nginx-deployment'
+                    sh 'kubectl --kubeconfig=kubeconfig rollout status deployment'
                 }
             }
         }
