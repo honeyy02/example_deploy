@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        k3 {
+        kubernetes {
             label 'nginx-pod'
             yaml """
             apiVersion: v1
