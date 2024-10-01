@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     // Use kubectl to apply the deployment manifest
-                    withCredentials([file(credentialsId: k3s_credentials, variable: 'KUBECONFIG')]) {
+                    withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS_ID , variable: 'KUBECONFIG')]) {
                          writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
                         
                         // Apply the Kubernetes deployment and service manifest using the temporary kubeconfig
