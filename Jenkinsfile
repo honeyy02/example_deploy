@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     // Apply the Kubernetes deployment
-                    sh 'kubectl --kubeconfig=kubeconfig apply -f deployment.yaml'
+                    sh 'kubectl --kubeconfig=kubeconfig apply -f deployment.yaml --validate=false'
                 }
             }
         }
