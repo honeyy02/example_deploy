@@ -1,19 +1,9 @@
 pipeline {
-    agent {
-        kubernetes {
-            label 'nginx-pod'
-            yaml """
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-              - name: kubectl
-                image: bitnami/kubectl
-                command:
-                - cat
-                tty: true
-            """
-        }
+    agent any
+
+    environment {
+        KUBECONFIG_CREDENTIALS_ID = 'k3s_credentials' // The secret ID for the kubeconfig file
+        K3S_NAMESPACE = 'jenkins' // Change to your desired namespace
     }
 
     stages {
@@ -23,11 +13,14 @@ pipeline {
             }
         }
 
-        stage('Deploy NGINX to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
-                container('kubectl') {
-                    // Apply the Kubernetes deployment and service manifest
-                    sh "kubectl apply -f deployment.yaml"
+                script {
+                    // Use withCredentials to handle the secret file for kubeconfig
+                    withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS_ID, variable: 'KUBECONFIG')]) {
+                        // Apply the Kubernetes deployment and service manifest using the kubeconfig
+                        sh "kubectl apply -f deployment.yaml -n ${K3S_NAMESPACE}"
+                    }
                 }
             }
         }
