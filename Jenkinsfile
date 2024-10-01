@@ -18,7 +18,7 @@ pipeline {
                 script {
                     // Use kubectl to apply the deployment manifest
                     withCredentials([file(credentialsId: k3s_credentials, variable: 'KUBECONFIG')]) {
-                         writeFile file: 'kubeconfig', text: "${KUBECONFIG_CONTENT}"
+                         writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
                         
                         // Apply the Kubernetes deployment and service manifest using the temporary kubeconfig
                         sh "KUBECONFIG=./kubeconfig kubectl apply -f deployment.yaml -n ${K8S_NAMESPACE}"
