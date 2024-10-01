@@ -25,7 +25,7 @@ pipeline {
                         clusters:
                         - cluster:
                             server: https://192.168.56.101:6443  # Use the correct IP address
-                            certificate-authority-data: DATA+OMITTED
+                            certificate-authority-data: ${caData}
                           name: my-cluster
                         contexts:
                         - context:
