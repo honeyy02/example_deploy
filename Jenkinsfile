@@ -6,38 +6,41 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('checkout') {
             steps {
                 // Clone your repository where the nginx-deployment.yaml is stored
-               checkout scm
+                checkout scm
             }
         }
 
         stage('Configure Kubeconfig') {
             steps {
                 script {
-                    // Create a kubeconfig file using the token
-                    def k3sToken = credentials('k3s_credentials')
-                    writeFile file: 'kubeconfig', text: """
-                    apiVersion: v1
-                    clusters:
-                    - cluster:
-                        server: https://192.168.56.101:6443
-                      name: my-cluster
-                    contexts:
-                    - context:
-                        cluster: my-cluster
-                        user: jenkins
-                      name: my-context
-                    current-context: my-context
-                    kind: Config
-                    preferences: {}
-                    users:
-                    - name: jenkins
-                      user:
-                        token: ${k3sToken}
-                    """
-                    sh 'chmod 600 kubeconfig' // Set appropriate permissions
+                    // Access the K3s token stored in Jenkins credentials
+                    withCredentials([string(credentialsId: 'k3s_credentials', variable: 'KUBE_TOKEN')]) {
+                        // Create a kubeconfig file using the correct server address and token
+                        writeFile file: 'kubeconfig', text: """
+                        apiVersion: v1
+                        clusters:
+                        - cluster:
+                            server: https://192.168.56.101:6443  # Use the correct IP address
+                            certificate-authority-data: DATA+OMITTED
+                          name: my-cluster
+                        contexts:
+                        - context:
+                            cluster: my-cluster
+                            user: jenkins
+                          name: my-context
+                        current-context: my-context
+                        kind: Config
+                        preferences: {}
+                        users:
+                        - name: jenkins
+                          user:
+                            token: ${KUBE_TOKEN}  # Use the token from credentials
+                        """
+                        sh 'chmod 600 kubeconfig' // Set appropriate permissions
+                    }
                 }
             }
         }
@@ -46,7 +49,7 @@ pipeline {
             steps {
                 script {
                     // Apply the Kubernetes deployment
-                    sh 'kubectl --kubeconfig=kubeconfig apply -f deployment.yaml'
+                    sh 'kubectl --kubeconfig=kubeconfig apply -f nginx-deployment.yaml'
                 }
             }
         }
@@ -55,7 +58,7 @@ pipeline {
             steps {
                 script {
                     // Check if Nginx pods are running
-                    sh 'kubectl --kubeconfig=kubeconfig rollout status deployment'
+                    sh 'kubectl --kubeconfig=kubeconfig rollout status deployment/nginx-deployment'
                 }
             }
         }
