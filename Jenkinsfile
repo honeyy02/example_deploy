@@ -1,28 +1,60 @@
 pipeline {
     agent any
 
+    environment {
+        KUBECONFIG = "${WORKSPACE}/kubeconfig"
+    }
+
     stages {
-        stage('checkout') {
+        stage('Checkout') {
             steps {
                 // Clone your repository where the nginx-deployment.yaml is stored
-                checkout scm
+               checkout scm
             }
         }
-        
+
+        stage('Configure Kubeconfig') {
+            steps {
+                script {
+                    // Create a kubeconfig file using the token
+                    writeFile file: 'kubeconfig', text: """
+                    apiVersion: v1
+                    clusters:
+                    - cluster:
+                        server: https://192.168.56.101:6443
+                      name: my-cluster
+                    contexts:
+                    - context:
+                        cluster: my-cluster
+                        user: jenkins
+                      name: my-context
+                    current-context: my-context
+                    kind: Config
+                    preferences: {}
+                    users:
+                    - name: jenkins
+                      user:
+                        token: ${k3s_credentials}
+                    """
+                    sh 'chmod 600 kubeconfig' // Set appropriate permissions
+                }
+            }
+        }
+
         stage('Deploy Nginx') {
             steps {
                 script {
                     // Apply the Kubernetes deployment
-                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl --kubeconfig=kubeconfig apply -f deployment.yaml'
                 }
             }
         }
-        
+
         stage('Verify Deployment') {
             steps {
                 script {
                     // Check if Nginx pods are running
-                    sh 'kubectl rollout status deployment'
+                    sh 'kubectl --kubeconfig=kubeconfig rollout status deployment'
                 }
             }
         }
