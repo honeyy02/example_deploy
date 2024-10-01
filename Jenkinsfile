@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        KUBECONFIG_CREDENTIALS_ID = 'k3s' // The secret ID for the kubeconfig file
+        KUBECONFIG_CREDENTIALS_ID = 'k3s_credentials' // The secret ID for the kubeconfig file
         K3S_NAMESPACE = 'jenkins' // Change to your desired namespace
     }
 
