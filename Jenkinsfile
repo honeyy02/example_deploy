@@ -16,9 +16,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Use kubectl to apply the deployment manifest
-                    withCredentials([file(credentialsId: KUBECONFIG_CREDENTIALS_ID , variable: 'KUBECONFIG')]) {
-                         writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
+                    // Use withCredentials to handle the secret text for kubeconfig
+                    withCredentials([string(credentialsId: KUBECONFIG_CREDENTIALS_ID, variable: 'KUBECONFIG_CONTENT')]) {
+                        // Create a temporary kubeconfig file with the content of the secret
+                        writeFile file: 'kubeconfig', text: "${KUBECONFIG_CONTENT}"
                         
                         // Apply the Kubernetes deployment and service manifest using the temporary kubeconfig
                         sh "KUBECONFIG=./kubeconfig kubectl apply -f deployment.yaml -n ${K8S_NAMESPACE}"
