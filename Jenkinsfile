@@ -17,6 +17,7 @@ pipeline {
             steps {
                 script {
                     // Create a kubeconfig file using the token
+                    def k3sToken = credentials('k3s_credentials')
                     writeFile file: 'kubeconfig', text: """
                     apiVersion: v1
                     clusters:
@@ -34,7 +35,7 @@ pipeline {
                     users:
                     - name: jenkins
                       user:
-                        token: ${k3s_credentials}
+                        token: ${k3sToken}
                     """
                     sh 'chmod 600 kubeconfig' // Set appropriate permissions
                 }
